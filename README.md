@@ -1,4 +1,5 @@
 ![Ghostkey](https://github.com/raf181/Ghostkey/blob/main/wiki/source/Untitled.webp)
+
 ---
 # Ghostkey
 Ghostykey is a fake HID inputdevice that can be used to simulate keyboard input. It was inspired by the [Rubber Ducky](https://shop.hak5.org/products/usb-rubber-ducky-deluxe) and the [Bash Bunny](https://shop.hak5.org/products/bash-bunny). For hardware, it uses the XIAO SAMD21 board to do the HID through USB, and the XIAO ESP32C6 board to do the WiFi connection and deploy selected payloads.
