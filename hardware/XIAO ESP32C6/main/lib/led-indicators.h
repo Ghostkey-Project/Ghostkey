@@ -1,31 +1,52 @@
-void WificonectingLED() {
-  //Serial.println("Connecting to Wi-Fi...");
-  pinMode(LED_BUILTIN, OUTPUT); // Set the built-in LED pin as an output
-  // Blink the LED for the first five seconds to indicate arming
-  for (int i = 0; i < 120; i++)
-  {                                  // Blink 10 times (5 seconds)
-    digitalWrite(LED_BUILTIN, HIGH); // Turn on the LED
-    delay(250);                      // Wait for 250 milliseconds
-    digitalWrite(LED_BUILTIN, LOW);  // Turn off the LED
-    delay(250);                      // Wait for 250 milliseconds
-  }
-  digitalWrite(LED_BUILTIN, LOW);
-}
+#ifndef LED_INDICATORS_H
+#define LED_INDICATORS_H
 
-void WificonectLED() {
-  for (int i = 0; i < 5; i++)
-  {
-    digitalWrite(LED_BUILTIN, HIGH);
-    delay(500);
-    digitalWrite(LED_BUILTIN, LOW);
-    delay(500);
-  }
-  for (int i = 0; i < 5; i++)
-  {
-    digitalWrite(LED_BUILTIN, HIGH);
-    delay(1000);
-    digitalWrite(LED_BUILTIN, LOW);
-    delay(1000);
-  }
-  digitalWrite(LED_BUILTIN, LOW);
-}
+#include "hardware-config.h"
+
+class LEDController {
+private:
+    // XIAO ESP32C6 has built-in LED on D13
+    const uint8_t ledPin = LED_BUILTIN;
+    bool ledState = false;
+    unsigned long lastBlink = 0;
+
+public:
+    LEDController() {
+        pinMode(ledPin, OUTPUT);
+        digitalWrite(ledPin, LOW);
+    }
+
+    // Non-blocking blink pattern implementation
+    void updateBlink(unsigned long interval) {
+        if (millis() - lastBlink >= interval) {
+            lastBlink = millis();
+            ledState = !ledState;
+            digitalWrite(ledPin, ledState);
+        }
+    }
+
+    // Status indication patterns
+    void indicateWiFiConnecting() {
+        updateBlink(500); // Slow blink while connecting
+    }
+
+    void indicateError(HardwareStatus error) {
+        switch(error) {
+            case HardwareStatus::WIFI_ERROR:
+                updateBlink(100); // Fast blink for WiFi error
+                break;
+            case HardwareStatus::I2C_ERROR:
+                updateBlink(250); // Medium blink for I2C error
+                break;
+            default:
+                digitalWrite(ledPin, HIGH); // Solid on for other errors
+                break;
+        }
+    }
+
+    void indicateNormal() {
+        digitalWrite(ledPin, LOW); // LED off during normal operation
+    }
+};
+
+#endif // LED_INDICATORS_H

@@ -1,3 +1,7 @@
 hardware/XIAO ESP32C6/main/lib/cred.h
 hardware/XIAO SAMD21/Payloads/funni_Stick_V3
 hardware/XIAO SAMD21/Payloads/cargo/workers/cred
+hardware/LILYGO_T-Beam_ESP32/*
+.obsidian
+hardware/Lilygo_T-Dongle-S3/flash_download_tool_3.9.5
+hardware/Lilygo_T-Dongle-S3/firmware

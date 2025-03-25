@@ -1,26 +1,23 @@
-// master board
-#include <Wire.h>        // Include the Wire library for I2C
-#include <WiFi.h>        // Include the WiFi library
-#include <ArduinoJson.h> // Include ArduinoJson library
+#include <Wire.h>
+#include <WiFi.h>
+#include <ArduinoJson.h>
 
-const char *ssid = "CASA-PONVI";                 // Replace with your WiFi network name (SSID)
-const char *password = "Famili@_9once_Vivanco$"; // Replace with your WiFi password
+const char *ssid = "CASA-PONVI";                 
+const char *password = "Famili@_9once_Vivanco$"; 
 
-const int I2C_SLAVE_ADDR = 0x08; // Replace with your I2C slave device address
+const int I2C_SLAVE_ADDR = 0x08; 
 
-WiFiServer server(80); // Create a server instance on port 80
+WiFiServer server(80); 
 
-// API Configuration
-const char *apiHost = "192.168.10.62";      // Replace with your API host address
-const int apiPort = 5000;                  // Replace with your API port
-const String apiEndpoint = "/get_command"; // Replace with your API endpoint for fetching commands
+const char *apiHost = "192.168.0.62";      
+const int apiPort = 5000;                  
+const String apiEndpoint = "/get_command"; 
 
-unsigned long lastApiCheckTime = 0;           // Variable to store the last time API was checked
-const unsigned long apiCheckInterval = 30000; // Interval in milliseconds (e.g., 30 seconds)
+unsigned long lastApiCheckTime = 0;           
+const unsigned long apiCheckInterval = 30000; 
 
-// ESP Device ID and Secret Key
-const String esp_id = "esp32_1";                     // Replace with your ESP ID
-const String esp_secret_key = "your_esp_secret_key"; // Replace with your ESP Secret Key
+const String esp_id = "esp32_1";                     
+const String esp_secret_key = "your_esp_secret_key"; 
 
 void fetchCommandFromAPI()
 {
@@ -29,16 +26,13 @@ void fetchCommandFromAPI()
   {
     Serial.println("Connected to API");
 
-    // Send GET request
     client.print(String("GET ") + apiEndpoint + "?esp_id=" + esp_id + "&esp_secret_key=" + esp_secret_key + " HTTP/1.1\r\n" +
                  "Host: " + apiHost + "\r\n" +
                  "Connection: close\r\n\r\n");
 
-    // Wait for response
     while (client.connected() && !client.available())
       delay(1);
 
-    // Read response headers
     String response = "";
     boolean headersEnd = false;
     while (client.available())
@@ -47,11 +41,10 @@ void fetchCommandFromAPI()
       if (line == "\n")
       {
         headersEnd = true;
-        break; // End of headers found
+        break;
       }
     }
 
-    // Read response body (JSON)
     if (headersEnd)
     {
       while (client.available())
@@ -64,8 +57,7 @@ void fetchCommandFromAPI()
     Serial.println("Raw JSON response:");
     Serial.println(response);
 
-    // Parse JSON
-    StaticJsonDocument<1024> jsonDoc; // Adjust size as necessary
+    StaticJsonDocument<1024> jsonDoc;
     DeserializationError error = deserializeJson(jsonDoc, response);
 
     if (error)
@@ -75,11 +67,9 @@ void fetchCommandFromAPI()
       return;
     }
 
-    // Extract command
     String commandFromAPI = jsonDoc["command"].as<String>();
     commandFromAPI.trim();
 
-    // Send command over I2C
     Wire.beginTransmission(I2C_SLAVE_ADDR);
     Wire.write((const uint8_t *)commandFromAPI.c_str(), commandFromAPI.length());
     Wire.endTransmission();
@@ -102,61 +92,55 @@ void fetchCommandFromAPI()
 
 void setup()
 {
-  Wire.begin(); // Initialize I2C communication
+  Wire.begin(); 
   pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(115200);
   connectToWiFi();
-  server.begin(); // Start HTTP server
+  server.begin(); 
 }
 
 void loop()
 {
   unsigned long currentMillis = millis();
 
-  // Check if it's time to fetch command from API
   if (currentMillis - lastApiCheckTime >= apiCheckInterval)
   {
     lastApiCheckTime = currentMillis;
     fetchCommandFromAPI();
   }
 
-  handleDirectMode(); // Handle direct mode concurrently
+  handleDirectMode(); 
 }
 
 void handleDirectMode()
 {
-  WiFiClient client = server.accept(); // Accept incoming client connections
+  WiFiClient client = server.accept(); 
 
   if (client)
   {
     Serial.println("New client connected");
 
-    String currentLine = ""; // String to hold incoming data from the client
-    String command = "";     // Variable to hold the command
+    String currentLine = ""; 
+    String command = "";     
 
-    // Read client request
     while (client.connected())
     {
       if (client.available())
       {
         char c = client.read();
-        Serial.write(c); // Print to the Serial Monitor
+        Serial.write(c);
         if (c == '\n')
         {
-          // If the current line is blank, end of HTTP request is reached
           if (currentLine.length() == 0)
           {
-            // Send HTTP response headers
             client.println("HTTP/1.1 200 OK");
             client.println("Content-type:text/html");
             client.println();
 
-            // Check if the command is valid
             if (command.length() > 0)
             {
               if (isValidCommand(command))
               {
-                // Send command over I2C
                 Wire.beginTransmission(I2C_SLAVE_ADDR);
                 Wire.write((const uint8_t *)command.c_str(), command.length());
                 Wire.endTransmission();
@@ -166,34 +150,30 @@ void handleDirectMode()
               }
               else
               {
-                // Invalid command handling
                 Serial.println("Invalid command");
-                blinkLED(10, 50); // Blink LED 10 times rapidly (50ms on, 50ms off)
+                blinkLED(10, 50);
                 client.println("Invalid command");
               }
             }
             else
             {
-              // Invalid request handling
               client.println("Invalid request");
             }
 
-            // End client connection
             client.stop();
             Serial.println("Client disconnected");
             break;
           }
           else
           {
-            currentLine = ""; // Clear currentLine for next request
+            currentLine = "";
           }
         }
         else if (c != '\r')
-        { // Add to currentLine if not end of line
+        {
           currentLine += c;
         }
 
-        // Check for command in the GET request
         if (currentLine.startsWith("GET /command?cmd="))
         {
           int start = currentLine.indexOf('=');
@@ -229,7 +209,7 @@ void connectToWiFi()
   Serial.println(WiFi.localIP());
   Serial.println("HTTP server started");
 
-  blinkLED(2, 250); // Blink LED to indicate successful connection
+  blinkLED(2, 250);
   digitalWrite(LED_BUILTIN, LOW);
 }
 
@@ -247,8 +227,5 @@ void blinkLED(int numBlinks, int blinkInterval)
 
 bool isValidCommand(String command)
 {
-  // Implement your command validation logic here
-  // For example, check if the command is within a valid range or format
-  // Replace with your actual validation logic
-  return !command.isEmpty(); // Simple example: command is valid if not empty
+  return !command.isEmpty();
 }
