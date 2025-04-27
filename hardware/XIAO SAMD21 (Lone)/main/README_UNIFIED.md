@@ -12,7 +12,9 @@ This is a consolidated version of Ghostkey that reads and executes instructions 
 
 - **Dual Script Mode:** Supports both custom instruction format and standard Ducky Script
 - **Layout Independent Typing:** Works correctly regardless of keyboard language settings
-- **Minimal Footprint:** Optimized to use minimal storage space
+- **Direct ASCII Mode:** Automatically bypasses layout issues with direct ASCII typing
+- **Enhanced Key Combinations:** Improved reliability for CTRL, ALT, SHIFT and special keys
+- **Special Test Files:** Diagnostics for keyboard layout and key combination issues
 - **Visual Feedback:** LED indicators for status and errors
 - **Debug Output:** Comprehensive serial monitoring for troubleshooting
 
@@ -35,16 +37,20 @@ This is a consolidated version of Ghostkey that reads and executes instructions 
    - Add commands following the appropriate format
    - Save the file to the root directory of the SD card
 
-4. **Configuration (Optional):**
-   - Open `ghostkey_sd.ino` in a text editor
-   - Edit the mode settings at the top of the file:
-     - `SCRIPT_MODE`: Set to 0 for custom format or 1 for Ducky Script
-     - `USE_LAYOUT_INDEPENDENT`: Set to true/false for layout independence
-
-5. **Upload the code:**
-   - Open `ghostkey_sd.ino` in the Arduino IDE
+4. **Upload the code:**
+   - Open `main.ino` in the Arduino IDE
    - Select your board type
    - Upload the code to your device
+
+## Special Test Files
+
+Ghostkey includes special test files for diagnosing keyboard issues:
+
+1. **`test-layout.txt`**: Tests basic keyboard layout and character typing
+2. **`key-combo-test.txt`**: Tests key combinations like CTRL+key, ALT+key, etc.
+3. **`shift-key-test.txt`**: Specifically tests SHIFT+key combinations
+
+Place any of these files on your SD card, and Ghostkey will automatically detect and run them instead of the regular payload file.
 
 ## Script Formats
 
@@ -52,6 +58,7 @@ This is a consolidated version of Ghostkey that reads and executes instructions 
 Commands in `instructions.txt` should be written one per line in the format: `COMMAND:PARAMETERS`
 
 Example:
+
 ```
 DELAY:1000
 RUN
@@ -64,6 +71,7 @@ TYPE:Hello, this is custom format!
 Commands in `payload.txt` should follow standard Ducky Script syntax:
 
 Example:
+
 ```
 REM This is a comment
 DELAY 1000
@@ -72,6 +80,23 @@ STRING notepad
 ENTER
 STRING Hello, this is Ducky Script!
 ```
+
+## Direct ASCII Mode
+
+Ghostkey now includes a Direct ASCII Mode that completely bypasses layout-independent typing and uses Keyboard.write() to send ASCII values directly. This helps solve issues with different keyboard layouts (like Spanish, German, French, etc.).
+
+Direct ASCII Mode is activated automatically and provides more reliable typing across different keyboard layouts, especially for special characters and key combinations.
+
+## Enhanced Key Combinations
+
+The latest version includes improvements for key combinations:
+
+- **SHIFT+key**: Fixed issues with uppercase letters and symbol typing
+- **CTRL+key**: More reliable key combinations for copy/paste/etc.
+- **ALT+key**: Better handling of ALT combinations
+- **Special keys**: Improved TAB, BACKSPACE, and other special keys
+
+These improvements use longer delays and more sophisticated key handling to ensure compatibility across different systems.
 
 ## LED Indicators
 
@@ -102,6 +127,7 @@ The serial output provides information about:
 - Execution flow and completion status
 
 Example serial output:
+
 ```
 Ghostkey SD Card Edition - Startup
 Script Mode: Ducky Script
@@ -111,6 +137,10 @@ Initializing SD card with CS on pin 7...SUCCESS!
 SD card initialized.
 Looking for primary script file: /payload.txt - FOUND
 Using script file: /payload.txt
+
+*** DIRECT ASCII MODE ACTIVE ***
+Using direct ASCII key handling to bypass layout issues
+
 Opening script file...
 File opened successfully
 Executing script...
@@ -139,15 +169,21 @@ Ghostkey idle - Script execution complete
    - Make sure SCRIPT_MODE is set correctly for your file type
    - View Serial Monitor for command execution logs
 
-3. **LED_RX flashing continuously:**
+3. **Keyboard layout issues:**
+   - Use Direct ASCII Mode by placing `test-layout.txt` on the SD card first to diagnose the issue
+   - Try using `shift-key-test.txt` if you're having issues specifically with SHIFT combinations
+   - Consider updating `layout-utils.h` if certain characters still don't work properly
+
+4. **Key combination problems:**
+   - Place `key-combo-test.txt` on your SD card to diagnose key combination issues
+   - Increase the delay values in the code if keys are still not being recognized
+   - Check the serial output to see if the combinations are being properly processed
+
+5. **LED_RX flashing continuously:**
    - This indicates an error reading the SD card
    - Check SD card connections
    - Try reformatting the SD card
    - Serial Monitor will show specific SD card errors
-
-4. **Keyboard layout issues:**
-   - If characters are not typing correctly, make sure USE_LAYOUT_INDEPENDENT is set to true
-   - For special characters not supported in layout-independent mode, you may need to modify the character mapping
 
 ## Extending the Code
 
