@@ -1,0 +1,77 @@
+REM Ghostkey - SHIFT Key Test
+REM This script focuses on testing SHIFT key combinations
+REM April 27, 2025
+
+DEFAULTDELAY 500
+
+REM Wait for device to initialize
+DELAY 5000
+
+REM Try to open notepad to see output
+GUI r
+DELAY 1000
+STRING notepad
+ENTER
+DELAY 1000
+
+REM Test header
+STRING === SHIFT KEY TEST ===
+ENTER
+ENTER
+
+REM Test 1: Basic SHIFT + letter (should produce uppercase)
+STRING Testing SHIFT + letter: 
+SHIFT a
+SHIFT b
+SHIFT c
+STRING  (should show ABC)
+ENTER
+ENTER
+
+REM Test 2: SHIFT + number (should produce symbols)
+STRING Testing SHIFT + number: 
+SHIFT 1
+SHIFT 2
+SHIFT 3
+SHIFT 4
+SHIFT 5
+STRING  (should show !@#$%)
+ENTER
+ENTER
+
+REM Test 3: SHIFT + arrow key (should select text)
+STRING Testing SHIFT + arrow:
+ENTER
+STRING ABCDEFG
+HOME
+DELAY 500
+SHIFT RIGHT
+SHIFT RIGHT
+SHIFT RIGHT
+DELAY 500
+STRING  (should have selected ABC)
+ENTER
+ENTER
+
+REM Test 4: Testing hold-down SHIFT
+STRING Testing hold-down SHIFT for multiple keys:
+ENTER
+STRING abcdefg
+HOME
+DELAY 500
+
+REM This simulates holding SHIFT while pressing RIGHT multiple times
+SHIFT
+DELAY 100
+RIGHT
+DELAY 100
+RIGHT
+DELAY 100
+RIGHT
+DELAY 100
+SHIFT
+DELAY 500
+
+ENTER
+STRING Test complete.
+ENTER

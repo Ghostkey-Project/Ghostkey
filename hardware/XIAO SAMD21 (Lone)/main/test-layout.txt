@@ -1,0 +1,39 @@
+REM Ghostkey - Keyboard Layout Test
+REM This script will help diagnose keyboard layout issues
+REM April 27, 2025
+
+DEFAULTDELAY 500
+
+REM Wait for device to initialize
+DELAY 5000
+
+REM Try to open notepad to see output
+GUI r
+DELAY 1000
+STRING notepad
+ENTER
+DELAY 1000
+
+REM Type a test pattern to see what comes out
+STRING KEYBOARD LAYOUT TEST
+ENTER
+STRING Direct ASCII mode diagnostics:
+ENTER
+ENTER
+
+STRING Testing alphabet: abcdefghijklmnopqrstuvwxyz
+ENTER
+STRING Testing CAPS: ABCDEFGHIJKLMNOPQRSTUVWXYZ
+ENTER
+STRING Testing numbers: 1234567890
+ENTER
+STRING Testing symbols: !@#$%^&*()_+-=[]{}|\;:'",.<>/?
+ENTER
+ENTER
+
+STRING If you see incorrect characters above, your keyboard layout is different.
+ENTER
+ENTER
+
+STRING Ghostkey now running direct ASCII mode for maximum compatibility.
+ENTER
