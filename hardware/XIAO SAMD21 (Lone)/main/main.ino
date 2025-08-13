@@ -1,4 +1,4 @@
-/*
+\/*
  * Ghostkey SD Card Edition - Unified Version
  * 
  * This firmware reads and executes keyboard instructions from an SD card.

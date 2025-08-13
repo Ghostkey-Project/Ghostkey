@@ -1,0 +1,104 @@
+REM Ghostkey - Special Key Combos Test
+REM This script tests various special key combinations
+REM April 27, 2025
+
+REM Longer delay between commands for reliability
+DEFAULTDELAY 1000
+
+REM Wait for device to initialize
+DELAY 5000
+
+REM Open notepad to test key combinations
+GUI r
+DELAY 1000
+STRING notepad
+ENTER
+DELAY 1000
+
+REM Test header
+STRING === KEYBOARD SPECIAL KEYS TEST ===
+ENTER
+ENTER
+
+REM Test individual special keys first
+STRING Testing TAB key:
+ENTER
+STRING Before tab
+TAB
+STRING After tab (should be indented)
+ENTER
+ENTER
+
+STRING Testing BACKSPACE key:
+ENTER
+STRING ABCDE
+BACKSPACE
+STRING (should be ABCD)
+ENTER
+ENTER
+
+REM Test CTRL key combinations
+STRING === Testing CTRL key combinations ===
+ENTER
+STRING Type some text and press CTRL+A to select all
+ENTER
+
+DELAY 1000
+STRING This is a test line
+ENTER
+STRING This is another test line
+ENTER
+DELAY 1000
+CTRL a
+DELAY 1000
+
+STRING (All text should have been selected)
+ENTER
+
+STRING Testing CTRL+C, CTRL+V:
+ENTER
+STRING Copy this text
+CTRL c
+ENTER
+STRING Paste here:
+CTRL v
+ENTER
+
+REM Test ALT key combinations
+STRING === Testing ALT key combinations ===
+ENTER
+STRING ALT+F should open the File menu:
+ENTER
+ALT f
+DELAY 1000
+
+STRING (File menu should have opened)
+ENTER
+DELAY 500
+ESCAPE
+DELAY 500
+
+REM Test SHIFT key combinations
+STRING === Testing SHIFT key combinations ===
+ENTER
+STRING SHIFT+arrow keys should select text:
+ENTER
+STRING ABCDEFG
+HOME
+SHIFT RIGHT
+SHIFT RIGHT
+SHIFT RIGHT
+DELAY 500
+STRING (Should have selected ABC)
+ENTER
+
+REM Test combined modifiers
+STRING === Testing multiple modifier keys ===
+ENTER
+STRING CTRL+SHIFT+ESCAPE should open Task Manager:
+ENTER
+CTRL SHIFT ESCAPE
+DELAY 1000
+
+STRING Test complete.
+ENTER
